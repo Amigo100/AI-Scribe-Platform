@@ -1,0 +1,20 @@
+{
+  "../components/Chat/ChatInputMicButton.tsx -> recordrtc": {
+    "id": "../components/Chat/ChatInputMicButton.tsx -> recordrtc",
+    "files": [
+      "static/chunks/node_modules_recordrtc_RecordRTC_js.js"
+    ]
+  },
+  "../components/Chat/ChatStartOfficeVisit.tsx -> recordrtc": {
+    "id": "../components/Chat/ChatStartOfficeVisit.tsx -> recordrtc",
+    "files": [
+      "static/chunks/node_modules_recordrtc_RecordRTC_js.js"
+    ]
+  },
+  "../components/Chat/ChatTextToSpeech.tsx -> recordrtc": {
+    "id": "../components/Chat/ChatTextToSpeech.tsx -> recordrtc",
+    "files": [
+      "static/chunks/node_modules_recordrtc_RecordRTC_js.js"
+    ]
+  }
+}
