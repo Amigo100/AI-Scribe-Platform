@@ -51,11 +51,11 @@ export const Chatbar = () => {
   );
 
   const handlePluginKeyChange = () => {
-    // ...
+    // Your logic here (if any)
   };
 
   const handleClearPluginKey = () => {
-    // ...
+    // Your logic here (if any)
   };
 
   const handleClearConversations = () => {
@@ -157,9 +157,17 @@ export const Chatbar = () => {
         handlePluginKeyChange,
         handleClearPluginKey,
         handleApiKeyChange,
+        // Added missing handlers (stubs provided)
+        handleExportData: () => {
+          // TODO: Implement export logic
+          console.log('Export data not implemented yet.');
+        },
+        handleImportConversations: () => {
+          // TODO: Implement import logic
+          console.log('Import conversations not implemented yet.');
+        },
       }}
     >
-      {/* Sidebar with dark gray background and white text is from updated Sidebar.tsx */}
       <Sidebar<Conversation>
         side="left"
         isOpen={showChatbar}
@@ -180,3 +188,5 @@ export const Chatbar = () => {
     </ChatbarContext.Provider>
   );
 };
+
+export default Chatbar;
