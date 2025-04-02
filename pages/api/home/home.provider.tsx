@@ -1,5 +1,5 @@
-// pages/api/home/home.provider.tsx (or move to a different folder if it's truly a React component)
-
+// pages/api/home/home.provider.tsx
+// (Or move outside /pages/api if it’s a React component)
 import type { ReactNode } from 'react';
 import { useEffect } from 'react';
 import { useCreateReducer } from '@/hooks/useCreateReducer';
@@ -10,56 +10,56 @@ import { Conversation } from '@/types/chat';
 import { Prompt } from '@/types/prompt';
 import { saveConversation, saveConversations } from '@/utils/app/conversation';
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const';
-import { OpenAIModelID, OpenAIModels } from '@/types/openai';
+import { OpenAIModelID, OpenAIModels } from '@/types/openai'; // <-- your enum is here
 import { getSettings } from '@/utils/app/settings';
 import { useTranslation } from 'next-i18next';
 
-// Define the interface for HomeProvider props
+// Example usage: we assume your enum is something like:
+//   enum OpenAIModelID {
+//     GPT_3_5_TURBO = 'gpt-3.5-turbo',
+//     GPT_4 = 'gpt-4',
+//     // ...
+//   }
+
 interface HomeProviderProps {
   children: ReactNode;
   serverSideApiKeyIsSet?: boolean;
   serverSidePluginKeysSet?: boolean;
-  defaultModelId?: string;
+  defaultModelId?: OpenAIModelID; // or string
   openaiApiKey?: string;
 }
 
-// This provider sets up your HomeContext logic.
 export const HomeProvider = ({
   children,
   serverSideApiKeyIsSet = false,
   serverSidePluginKeysSet = false,
-  defaultModelId = OpenAIModelID['gpt-3.5-turbo'],
+  // Using the enum key:
+  defaultModelId = OpenAIModelID.GPT_3_5_TURBO,
   openaiApiKey = '',
 }: HomeProviderProps) => {
   const { t } = useTranslation('chat');
   const contextValue = useCreateReducer<HomeInitialState>({ initialState });
 
   const {
-    state: {
-      apiKey,
-      lightMode,
-      folders,
-      conversations,
-      selectedConversation,
-      prompts,
-      temperature,
-    },
+    state: { conversations },
     dispatch,
   } = contextValue;
 
-  // Handler: Create a new conversation
   const handleNewConversation = () => {
     const lastConversation = conversations[conversations.length - 1];
     const newConversation: Conversation = {
       id: uuidv4(),
       name: t('New Conversation'),
       messages: [],
-      model: lastConversation?.model || {
-        id: OpenAIModels[defaultModelId].id,
-        name: OpenAIModels[defaultModelId].name,
-        maxLength: OpenAIModels[defaultModelId].maxLength,
-        tokenLimit: OpenAIModels[defaultModelId].tokenLimit,
-      },
+      model:
+        lastConversation?.model ??
+        // e.g. if OpenAIModels is keyed by the enum values:
+        {
+          id:    OpenAIModels[defaultModelId].id,
+          name:  OpenAIModels[defaultModelId].name,
+          maxLength:   OpenAIModels[defaultModelId].maxLength,
+          tokenLimit:  OpenAIModels[defaultModelId].tokenLimit,
+        },
       prompt: DEFAULT_SYSTEM_PROMPT,
       temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
       folderId: null,
@@ -73,7 +73,6 @@ export const HomeProvider = ({
     dispatch({ field: 'loading', value: false });
   };
 
-  // Load settings from localStorage or server-side
   useEffect(() => {
     const settings = getSettings();
     if (settings.theme) {
@@ -100,7 +99,7 @@ export const HomeProvider = ({
       value={{
         ...contextValue,
         handleNewConversation,
-        // Include other handlers here as needed
+        // any other handlers ...
       }}
     >
       {children}
@@ -108,5 +107,4 @@ export const HomeProvider = ({
   );
 };
 
-// Re-export HomeContext if needed
 export { HomeContext };
