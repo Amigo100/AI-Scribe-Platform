@@ -1,4 +1,5 @@
 // pages/api/home/home.provider.tsx
+
 import React, { ReactNode, useEffect } from 'react';
 import { useCreateReducer } from '@/hooks/useCreateReducer';
 import HomeContext from './home.context';
@@ -26,10 +27,11 @@ export const HomeProvider = ({
   children,
   serverSideApiKeyIsSet = false,
   serverSidePluginKeysSet = false,
-  defaultModelId = OpenAIModelID['gpt-3.5-turbo'],
+  // Use the enum key instead of a string literal:
+  defaultModelId = OpenAIModelID.GPT_3_5_TURBO,
   openaiApiKey = '',
 }: HomeProviderProps) => {
-  const { t } = useTranslation('chat');
+  const { t } = useTranslation('chat'); // if you use translations
   const contextValue = useCreateReducer<HomeInitialState>({ initialState });
 
   const {
@@ -63,7 +65,7 @@ export const HomeProvider = ({
     dispatch({ field: 'loading', value: false });
   };
 
-  // ... other handlers like handleCreateFolder, handleDeleteFolder, etc.
+  // ... (include your other handlers such as handleCreateFolder, handleDeleteFolder, etc.)
 
   useEffect(() => {
     const settings = getSettings();
@@ -99,5 +101,4 @@ export const HomeProvider = ({
   );
 };
 
-// Export only HomeContext here to avoid duplicate exporting HomeProvider
 export { HomeContext };
