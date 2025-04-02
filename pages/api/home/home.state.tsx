@@ -7,6 +7,10 @@ import { OpenAIModel, OpenAIModelID } from '@/types/openai';
 import { PluginKey } from '@/types/plugin';
 import { Prompt } from '@/types/prompt';
 
+/**
+ * Defines the shape of your global "home" state.
+ * Adjust or remove fields as needed.
+ */
 export interface HomeInitialState {
   apiKey: string;
   pluginKeys: PluginKey[];
@@ -51,6 +55,10 @@ export interface HomeInitialState {
   hasChatOutput?: boolean;
 }
 
+/**
+ * Initial/default values for your global state.
+ * Adjust as needed for your app.
+ */
 export const initialState: HomeInitialState = {
   apiKey: '',
   loading: false,
@@ -253,6 +261,6 @@ Plan & Follow-up:`,
   openModal: null,
   userSignOff: '',
 
-  // Initialize hasChatOutput as false
+  // Start with no chat output
   hasChatOutput: false,
 };
