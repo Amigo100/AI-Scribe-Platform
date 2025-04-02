@@ -51,11 +51,11 @@ export const Chatbar = () => {
   );
 
   const handlePluginKeyChange = () => {
-    // Your logic here (if any)
+    // ... your logic here
   };
 
   const handleClearPluginKey = () => {
-    // Your logic here (if any)
+    // ... your logic here
   };
 
   const handleClearConversations = () => {
@@ -157,7 +157,7 @@ export const Chatbar = () => {
         handlePluginKeyChange,
         handleClearPluginKey,
         handleApiKeyChange,
-        // Added missing handlers (stubs provided)
+        // Stub functions for missing properties:
         handleExportData: () => {
           // TODO: Implement export logic
           console.log('Export data not implemented yet.');
@@ -171,7 +171,7 @@ export const Chatbar = () => {
       <Sidebar<Conversation>
         side="left"
         isOpen={showChatbar}
-        addItemButtonTitle={t('Start New Session')}
+        addItemButtonTitle={t('Start New Session') as string}
         itemComponent={<Conversations conversations={filteredConversations} />}
         folderComponent={<ChatFolders searchTerm={searchTerm} />}
         items={filteredConversations}
