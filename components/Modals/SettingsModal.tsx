@@ -69,9 +69,8 @@ export const SettingsModal = () => {
   };
 
   const handleSaveSettings = () => {
-    // Save API key, default language, and model ID to global state
+    // Save API key and default model to global state
     dispatch({ field: 'apiKey', value: tempApiKey });
-    dispatch({ field: 'defaultLanguage', value: defaultLanguage });
     dispatch({ field: 'defaultModelId', value: selectedModel });
 
     // Store values in localStorage
@@ -92,14 +91,14 @@ export const SettingsModal = () => {
           </h2>
           <div className="flex flex-wrap gap-2">
             <button
+              className="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded text-gray-700 dark:text-gray-100 hover:bg-gray-400 dark:hover:bg-gray-500"
               onClick={handleClose}
-              className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded hover:bg-gray-400 dark:hover:bg-gray-500"
             >
               {t('Cancel')}
             </button>
             <button
-              onClick={handleSaveSettings}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+              onClick={handleSaveSettings}
             >
               {t('Save Settings')}
             </button>
