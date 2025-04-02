@@ -7,8 +7,7 @@ export const SettingsModal = () => {
   const { t } = useTranslation();
   const { state, dispatch } = useContext(HomeContext);
 
-  const isOpen = state.openModal === 'settings';
-  if (!isOpen) return null;
+  if (state.openModal !== 'settings') return null;
 
   // Example: we rely on state.lightMode for dark mode.
   const isDarkMode = state.lightMode === 'dark';
@@ -59,9 +58,7 @@ export const SettingsModal = () => {
 
   const handleApiProviderChange = (val: string) => {
     setSelectedApiProvider(val);
-    // If "gemini", default model might be gemini-2.0
-    // If "openai", default model might be gpt-4
-    // If "rest", default could be internal ML, etc.
+    // Adjust default model based on provider
     if (val === 'openai' && (selectedModel.startsWith('gemini') || selectedModel.startsWith('internal'))) {
       setSelectedModel('gpt-4');
     } else if (val === 'gemini' && !selectedModel.startsWith('gemini')) {
@@ -72,13 +69,12 @@ export const SettingsModal = () => {
   };
 
   const handleSaveSettings = () => {
-    // Save to global context
+    // Save API key, default language, and model ID to global state
     dispatch({ field: 'apiKey', value: tempApiKey });
-    dispatch({ field: 'apiProvider', value: selectedApiProvider });
     dispatch({ field: 'defaultLanguage', value: defaultLanguage });
     dispatch({ field: 'defaultModelId', value: selectedModel });
 
-    // Save to localStorage
+    // Store values in localStorage
     localStorage.setItem('apiKey', tempApiKey);
     localStorage.setItem('apiProvider', selectedApiProvider);
     localStorage.setItem('defaultLanguage', defaultLanguage);
@@ -88,18 +84,26 @@ export const SettingsModal = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-[999] bg-black/50 flex items-center justify-center">
-      <div className="bg-white dark:bg-gray-800 w-full max-w-md p-6 rounded shadow">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50">
+      <div className="bg-white dark:bg-gray-800 w-full max-w-3xl p-6 rounded shadow overflow-auto max-h-[90vh]">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 sm:mb-0">
             {t('Settings')}
           </h2>
-          <button
-            className="px-3 py-1 bg-gray-300 dark:bg-gray-600 rounded text-gray-700 dark:text-gray-100 hover:bg-gray-400 dark:hover:bg-gray-500"
-            onClick={handleClose}
-          >
-            {t('Close')}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={handleClose}
+              className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-100 rounded hover:bg-gray-400 dark:hover:bg-gray-500"
+            >
+              {t('Cancel')}
+            </button>
+            <button
+              onClick={handleSaveSettings}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+            >
+              {t('Save Settings')}
+            </button>
+          </div>
         </div>
 
         {/* Dark Mode Toggle */}
@@ -177,7 +181,7 @@ export const SettingsModal = () => {
             <option value="en">English</option>
             <option value="es">Spanish</option>
             <option value="fr">French</option>
-            {/* Add more if desired */}
+            {/* Add more languages if needed */}
           </select>
         </div>
 
@@ -199,3 +203,5 @@ export const SettingsModal = () => {
     </div>
   );
 };
+
+export default SettingsModal;
