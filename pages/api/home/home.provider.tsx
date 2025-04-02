@@ -1,52 +1,44 @@
 // pages/api/home/home.provider.tsx
-
-import { useEffect, useRef, useState } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import { useCreateReducer } from '@/hooks/useCreateReducer';
 import HomeContext from './home.context';
 import { HomeInitialState, initialState } from './home.state';
 import { v4 as uuidv4 } from 'uuid';
 import { Conversation } from '@/types/chat';
-import { KeyValuePair } from '@/types/data';
-import { FolderType } from '@/types/folder';
 import { Prompt } from '@/types/prompt';
-import { updateConversation, saveConversation, saveConversations } from '@/utils/app/conversation';
-import { cleanConversationHistory, cleanSelectedConversation } from '@/utils/app/clean';
+import { saveConversation, saveConversations } from '@/utils/app/conversation';
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const';
 import { OpenAIModelID, OpenAIModels } from '@/types/openai';
 import { getSettings } from '@/utils/app/settings';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
-// and any other imports from home.tsx as needed
+
+// Define the interface for HomeProvider props
+interface HomeProviderProps {
+  children: ReactNode;
+  serverSideApiKeyIsSet?: boolean;
+  serverSidePluginKeysSet?: boolean;
+  defaultModelId?: string;
+  openaiApiKey?: string;
+}
 
 // This is a new 'provider' that sets up your entire HomeContext logic
-export const HomeProvider = ({ 
+export const HomeProvider = ({
   children,
   serverSideApiKeyIsSet = false,
   serverSidePluginKeysSet = false,
   defaultModelId = OpenAIModelID['gpt-3.5-turbo'],
   openaiApiKey = '',
-}) => {
-
-  const { t } = useTranslation('chat'); // if you use translations
+}: HomeProviderProps) => {
+  const { t } = useTranslation('chat');
   const contextValue = useCreateReducer<HomeInitialState>({ initialState });
 
   const {
-    state: {
-      apiKey,
-      lightMode,
-      folders,
-      conversations,
-      selectedConversation,
-      prompts,
-      temperature,
-    },
+    state: { apiKey, lightMode, folders, conversations, selectedConversation, prompts, temperature },
     dispatch,
   } = contextValue;
 
-  // all the logic you had in home.tsx -> handleNewConversation, handleCreateFolder, etc. 
-  // EXACTLY as in your home.tsx, but do not return <Chat/> or <main> here:
+  // Handler: Create a new conversation
   const handleNewConversation = () => {
-    // same as in home.tsx
     const lastConversation = conversations[conversations.length - 1];
     const newConversation: Conversation = {
       id: uuidv4(),
@@ -71,13 +63,9 @@ export const HomeProvider = ({
     dispatch({ field: 'loading', value: false });
   };
 
-  // ...handleCreateFolder, handleDeleteFolder, handleUpdateFolder, handleSelectConversation, handleUpdateConversation, etc. 
-  // from your home.tsx
+  // ... other handlers like handleCreateFolder, handleDeleteFolder, etc.
 
-  // useEffects that load from localStorage, etc. 
-  // you can copy those from home.tsx if you want the same initialization logic
   useEffect(() => {
-    // do your localStorage or server side logic
     const settings = getSettings();
     if (settings.theme) {
       dispatch({ field: 'lightMode', value: settings.theme });
@@ -96,20 +84,20 @@ export const HomeProvider = ({
     if (serverSideApiKeyIsSet) {
       dispatch({ field: 'serverSideApiKeyIsSet', value: true });
     }
+  }, [openaiApiKey, serverSideApiKeyIsSet, dispatch]);
 
-    // etc. replicate as needed 
-  }, [openaiApiKey, serverSideApiKeyIsSet]);
-
-  // Provide the entire context value
   return (
     <HomeContext.Provider
       value={{
         ...contextValue,
         handleNewConversation,
-        // your other handlers, e.g. handleCreateFolder, handleSelectConversation, etc.
+        // Include your other handlers here as needed.
       }}
     >
       {children}
     </HomeContext.Provider>
   );
 };
+
+// Export only HomeContext here to avoid duplicate exporting HomeProvider
+export { HomeContext };
