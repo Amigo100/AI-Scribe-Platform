@@ -15,7 +15,7 @@ import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from 'next-i18next';
 
-// PDF library
+// PDFMake
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
@@ -41,12 +41,7 @@ import { HelpModal } from '@/components/Modals/HelpModal';
 import { SettingsModal } from '@/components/Modals/SettingsModal';
 import PredictiveAnalyticsModal from '@/components/Modals/PredictiveAnalyticsModal';
 
-/**
- * Splits the final assistant message into three sections:
- * Potential Transcription Errors,
- * Helpful Content,
- * Clinical Document.
- */
+/** Splits the final assistant message into 3 sections. */
 function parseAssistantOutput(content: string) {
   let potentialRecs = '';
   let helpfulContent = '';
@@ -74,7 +69,7 @@ function parseAssistantOutput(content: string) {
   return { potentialRecs, helpfulContent, clinicalDoc };
 }
 
-/** Rebuild the final assistant message from the three sections. */
+/** Rebuilds a final assistant message string from the 3 sections. */
 function rebuildAssistantOutput(
   potentialRecs: string,
   helpfulContent: string,
@@ -98,9 +93,9 @@ interface Props {
 export const Chat = memo(function Chat({ stopConversationRef }: Props) {
   const { t } = useTranslation('chat');
 
-  /*****************************************************************
-   * 1) GET CONTEXT + DEFINE ALL HOOKS UNCONDITIONALLY
-   *****************************************************************/
+  /******************************************************************
+   * 1) Grab context + define all hooks (unconditional)
+   ******************************************************************/
   const {
     state: {
       apiKey,
@@ -121,7 +116,7 @@ export const Chat = memo(function Chat({ stopConversationRef }: Props) {
     handleUpdateConversation,
   } = useContext(HomeContext);
 
-  // local states
+  // Local states
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
   const [currentMessage, setCurrentMessage] = useState<Message | null>(null);
 
@@ -130,32 +125,32 @@ export const Chat = memo(function Chat({ stopConversationRef }: Props) {
     selectedConversation?.name || ''
   );
 
-  // Template, Model selection
+  // Template & Model selection
   const [activeTemplateName, setActiveTemplateName] = useState('ED Triage Note');
   const [activeModelName, setActiveModelName] = useState('GPT-4');
   const [showTemplatesDropdown, setShowTemplatesDropdown] = useState(false);
   const [showModelsDropdown, setShowModelsDropdown] = useState(false);
 
-  // final doc editing
+  // For editing final doc
   const [editedClinicalDoc, setEditedClinicalDoc] = useState('');
   const [isEditingDoc, setIsEditingDoc] = useState(false);
 
-  // references
+  // Refs
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // final assistant message
+  // Final assistant message
   const [finalAssistantMessage, setFinalAssistantMessage] = useState<Message | null>(null);
 
-  // 1a) Keep doc title in sync with selectedConversation
+  // 1a) Keep doc title in sync with the conversation
   useEffect(() => {
     if (selectedConversation) {
       setDocumentTitle(selectedConversation.name);
     }
   }, [selectedConversation]);
 
-  // 1b) Identify the final assistant message
+  // 1b) Identify final assistant message
   useEffect(() => {
     let found: Message | null = null;
     if (selectedConversation?.messages) {
@@ -169,7 +164,7 @@ export const Chat = memo(function Chat({ stopConversationRef }: Props) {
     setFinalAssistantMessage(found);
   }, [selectedConversation]);
 
-  // 1c) If we have a final message + not editing => load doc text
+  // 1c) If we have final msg + not editing => load doc text
   useEffect(() => {
     if (finalAssistantMessage && !isEditingDoc) {
       const { clinicalDoc } = parseAssistantOutput(finalAssistantMessage.content);
@@ -223,11 +218,10 @@ export const Chat = memo(function Chat({ stopConversationRef }: Props) {
         return;
       }
 
-      // if no selected conv => create new one
       let activeConv = selectedConversation;
       if (!activeConv) {
+        // Provide all required fields per your "Conversation" type
         activeConv = {
-          // NOTE: Must provide all fields required by "Conversation" type:
           id: uuidv4(),
           name: documentTitle || 'New Clinical Note',
           messages: [],
@@ -238,7 +232,6 @@ export const Chat = memo(function Chat({ stopConversationRef }: Props) {
               maxLength: 12000,
               tokenLimit: 4000,
             },
-          // Provide missing fields:
           prompt: '',
           temperature: 1.0,
           folderId: null,
@@ -276,7 +269,6 @@ export const Chat = memo(function Chat({ stopConversationRef }: Props) {
       saveConversation(updatedConv);
       saveConversations(newConversations2);
 
-      // Build system prompt
       const convPrompt = activeConv.prompt?.trim() || '';
       const systemPrompt = `
 You are a clinical scribe generating a final note with 3 sections:
@@ -374,7 +366,6 @@ ${convPrompt}
 
   let mainContent: ReactNode;
 
-  // Condition 1: No API Key
   if (noApiKey) {
     mainContent = (
       <div className="mx-auto flex h-full w-[300px] flex-col justify-center space-y-6 text-black sm:w-[600px]">
@@ -383,13 +374,9 @@ ${convPrompt}
         </div>
       </div>
     );
-  }
-  // Condition 2: Model error
-  else if (modelError) {
+  } else if (modelError) {
     mainContent = <ErrorMessageDiv error={modelError} />;
-  }
-  // Condition 3: No messages => show start UI
-  else if (noMessages) {
+  } else if (noMessages) {
     mainContent = (
       <div className="flex-1 flex flex-col border-b border-gray-300 w-full">
         <div className="flex flex-row flex-1 items-center justify-evenly py-6 px-4 md:py-12">
@@ -426,9 +413,7 @@ ${convPrompt}
         </div>
       </div>
     );
-  }
-  // Otherwise => parse final assistant message, show output
-  else {
+  } else {
     let potentialRecs = '';
     let helpfulContent = '';
     let docText = '';
@@ -458,7 +443,7 @@ ${convPrompt}
         <hr className="my-4 border-gray-300 dark:border-gray-700" />
 
         <div className="flex flex-col md:flex-row gap-6">
-          {/* LEFT: Clinical Document w/ editing */}
+          {/* Left: Clinical Document w/ editing */}
           <div className="flex-1 md:w-1/2 border rounded-md p-4 dark:border-gray-600">
             <div className="flex items-center justify-between mb-2">
               <div className="font-bold text-md">Clinical Document</div>
@@ -494,7 +479,7 @@ ${convPrompt}
               {isEditingDoc && (
                 <button
                   onClick={() => {
-                    // Rebuild the final assistant message
+                    // On "Save," rebuild final assistant message
                     if (!finalAssistantMessage) return;
                     const parsed = parseAssistantOutput(finalAssistantMessage.content);
                     const newContent = rebuildAssistantOutput(
@@ -586,7 +571,7 @@ ${convPrompt}
             </div>
           </div>
 
-          {/* RIGHT: Potential Errors & Helpful Content */}
+          {/* Right: Potential Errors & Helpful Content */}
           <div className="flex-1 md:w-1/2 flex flex-col gap-4">
             <div className="border rounded-md p-4 dark:border-gray-600">
               <h3 className="text-md font-bold mb-2">
@@ -608,7 +593,7 @@ ${convPrompt}
     );
   }
 
-  // If loading, show loader
+  // If loading => show loader
   const loader = loading ? <ChatLoader /> : null;
 
   // bottom bar style
@@ -626,7 +611,6 @@ ${convPrompt}
    *****************************************************************/
   return (
     <div className="flex flex-col w-full h-full bg-white dark:bg-[#343541] text-black dark:text-white">
-
       {/* HEADER */}
       <header className="sticky top-0 z-20 bg-gray-900 text-white flex flex-col">
         <div className="flex items-center px-4 py-3">
@@ -705,8 +689,8 @@ ${convPrompt}
           {/* Model dropdown */}
           <div className="relative">
             <button
-              className="flex items-center gap-1 rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold
-                         text-white hover:bg-gray-700"
+              className="flex items-center gap-1 rounded-md bg-gray-900 px-4 py-2
+                         text-sm font-semibold text-white hover:bg-gray-700"
               onClick={() => setShowModelsDropdown(!showModelsDropdown)}
             >
               {`${t('Model')}: ${activeModelName}`}
@@ -755,7 +739,7 @@ ${convPrompt}
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
+      {/* MAIN SCROLL */}
       <div
         ref={chatContainerRef}
         onScroll={() => {
@@ -769,7 +753,7 @@ ${convPrompt}
         }}
         className="flex-1 overflow-y-auto pb-40"
       >
-        {/** The "mainContent" logic from above. */}
+        {/** The "mainContent" built above */}
         {mainContent}
 
         {loading && <ChatLoader />}
@@ -778,12 +762,15 @@ ${convPrompt}
       </div>
 
       {/* BOTTOM BAR */}
-      <div className="flex justify-center pb-2" style={{
-        position: 'fixed',
-        bottom: 0,
-        left: showChatbar ? '240px' : '0',
-        right: showSidePromptbar ? '240px' : '0',
-      }}>
+      <div
+        className="flex justify-center pb-2"
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: showChatbar ? '240px' : '0',
+          right: showSidePromptbar ? '240px' : '0',
+        }}
+      >
         <div className="w-full px-2">
           <ChatInput
             stopConversationRef={stopConversationRef}
@@ -809,7 +796,15 @@ ${convPrompt}
       {openModal === 'templates' && <TemplatesModal />}
       {openModal === 'help' && <HelpModal />}
       {openModal === 'settings' && <SettingsModal />}
-      {openModal === 'predictive analytics' && <PredictiveAnalyticsModal />}
+
+      {openModal === 'predictive analytics' && (
+        <PredictiveAnalyticsModal
+          onClose={() => {
+            // The required onClose prop
+            dispatch({ field: 'openModal', value: null });
+          }}
+        />
+      )}
     </div>
   );
 });
