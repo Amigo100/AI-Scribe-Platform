@@ -1,28 +1,24 @@
-// pages/api/home/home.provider.tsx (or move to a non-API folder if it's a React component)
+// ~/pages/api/home/home.provider.tsx
+// (Ideally move this file out of /api/ if it is a React component!)
 
 import type { ReactNode } from 'react';
 import { useEffect } from 'react';
-import { useCreateReducer } from '@/hooks/useCreateReducer';
+import { v4 as uuidv4 } from 'uuid';
+import { useTranslation } from 'next-i18next';
+
 import HomeContext from './home.context';
 import { HomeInitialState, initialState } from './home.state';
-import { v4 as uuidv4 } from 'uuid';
+import { useCreateReducer } from '@/hooks/useCreateReducer';
 import { Conversation } from '@/types/chat';
-import { Prompt } from '@/types/prompt';
-import { saveConversation, saveConversations } from '@/utils/app/conversation';
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const';
-// import { OpenAIModelID, OpenAIModels } from '@/types/openai'; 
-// ^ If you're not referencing OpenAIModelID or OpenAIModels, you can remove the import
+import { saveConversation, saveConversations } from '@/utils/app/conversation';
 import { getSettings } from '@/utils/app/settings';
-import { useTranslation } from 'next-i18next';
 
 interface HomeProviderProps {
   children: ReactNode;
   serverSideApiKeyIsSet?: boolean;
   serverSidePluginKeysSet?: boolean;
-
-  // If you do not need a defaultModelId at all, you can remove this line:
   defaultModelId?: string;
-
   openaiApiKey?: string;
 }
 
@@ -30,25 +26,33 @@ export const HomeProvider = ({
   children,
   serverSideApiKeyIsSet = false,
   serverSidePluginKeysSet = false,
-
-  // No longer referencing GPT_3_5_TURBO or 'gpt-3.5-turbo':
   defaultModelId = '',
-
   openaiApiKey = '',
 }: HomeProviderProps) => {
   const { t } = useTranslation('chat');
   const contextValue = useCreateReducer<HomeInitialState>({ initialState });
 
   const {
-    state: { conversations },
+    state: {
+      apiKey,
+      lightMode,
+      folders,
+      conversations,
+      selectedConversation,
+      prompts,
+      temperature,
+      loading,
+    },
     dispatch,
   } = contextValue;
 
-  // Handler: Create a new conversation
+  //
+  // 1. handleNewConversation
+  //
   const handleNewConversation = () => {
     const lastConversation = conversations[conversations.length - 1];
 
-    // If you do want to reference a fallback model, you can do so here:
+    // Example fallback model object if you need it:
     const fallbackModel = {
       id: 'my-fallback-model',
       name: 'My Fallback Model',
@@ -60,8 +64,7 @@ export const HomeProvider = ({
       id: uuidv4(),
       name: t('New Conversation'),
       messages: [],
-      // Use last conversation’s model if it exists, otherwise use the fallback:
-      model: lastConversation?.model || fallbackModel,
+      model: lastConversation?.model ?? fallbackModel,
       prompt: DEFAULT_SYSTEM_PROMPT,
       temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
       folderId: null,
@@ -70,12 +73,68 @@ export const HomeProvider = ({
     const updatedConversations = [...conversations, newConversation];
     dispatch({ field: 'selectedConversation', value: newConversation });
     dispatch({ field: 'conversations', value: updatedConversations });
+
     saveConversation(newConversation);
     saveConversations(updatedConversations);
+
     dispatch({ field: 'loading', value: false });
   };
 
-  // Load settings from localStorage or server-side
+  //
+  // 2. Folder Handlers
+  //
+  const handleCreateFolder = (folderName: string) => {
+    const newFolder = {
+      id: uuidv4(),
+      name: folderName,
+    };
+    const updatedFolders = [...folders, newFolder];
+
+    dispatch({ field: 'folders', value: updatedFolders });
+    // If you have a localStorage or DB utility, you could also persist it:
+    localStorage.setItem('folders', JSON.stringify(updatedFolders));
+  };
+
+  const handleDeleteFolder = (folderId: string) => {
+    const updatedFolders = folders.filter((f) => f.id !== folderId);
+    dispatch({ field: 'folders', value: updatedFolders });
+    localStorage.setItem('folders', JSON.stringify(updatedFolders));
+  };
+
+  const handleUpdateFolder = (folderId: string, newName: string) => {
+    const updatedFolders = folders.map((f) =>
+      f.id === folderId ? { ...f, name: newName } : f,
+    );
+    dispatch({ field: 'folders', value: updatedFolders });
+    localStorage.setItem('folders', JSON.stringify(updatedFolders));
+  };
+
+  //
+  // 3. Conversation Handlers
+  //
+  const handleSelectConversation = (conversation: Conversation) => {
+    dispatch({ field: 'selectedConversation', value: conversation });
+    // Potentially save selection to localStorage, if desired:
+    saveConversation(conversation);
+  };
+
+  const handleUpdateConversation = (updatedConversation: Conversation) => {
+    const newConversations = conversations.map((c) =>
+      c.id === updatedConversation.id ? updatedConversation : c,
+    );
+    dispatch({ field: 'conversations', value: newConversations });
+    saveConversations(newConversations);
+
+    // Update the currently selected conversation if it’s the same
+    if (selectedConversation?.id === updatedConversation.id) {
+      dispatch({ field: 'selectedConversation', value: updatedConversation });
+      saveConversation(updatedConversation);
+    }
+  };
+
+  //
+  // 4. Load settings from localStorage or server
+  //
   useEffect(() => {
     const settings = getSettings();
     if (settings.theme) {
@@ -101,8 +160,13 @@ export const HomeProvider = ({
     <HomeContext.Provider
       value={{
         ...contextValue,
+        // Provide all the handlers required by HomeContextProps:
         handleNewConversation,
-        // other handlers if needed
+        handleCreateFolder,
+        handleDeleteFolder,
+        handleUpdateFolder,
+        handleSelectConversation,
+        handleUpdateConversation,
       }}
     >
       {children}
