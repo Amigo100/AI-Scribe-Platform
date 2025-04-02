@@ -1,5 +1,5 @@
-// pages/api/home/home.provider.tsx
-// (Or move outside /pages/api if it’s a React component)
+// pages/api/home/home.provider.tsx (or move to a non-API folder if it's a React component)
+
 import type { ReactNode } from 'react';
 import { useEffect } from 'react';
 import { useCreateReducer } from '@/hooks/useCreateReducer';
@@ -10,22 +10,19 @@ import { Conversation } from '@/types/chat';
 import { Prompt } from '@/types/prompt';
 import { saveConversation, saveConversations } from '@/utils/app/conversation';
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const';
-import { OpenAIModelID, OpenAIModels } from '@/types/openai'; // <-- your enum is here
+// import { OpenAIModelID, OpenAIModels } from '@/types/openai'; 
+// ^ If you're not referencing OpenAIModelID or OpenAIModels, you can remove the import
 import { getSettings } from '@/utils/app/settings';
 import { useTranslation } from 'next-i18next';
-
-// Example usage: we assume your enum is something like:
-//   enum OpenAIModelID {
-//     GPT_3_5_TURBO = 'gpt-3.5-turbo',
-//     GPT_4 = 'gpt-4',
-//     // ...
-//   }
 
 interface HomeProviderProps {
   children: ReactNode;
   serverSideApiKeyIsSet?: boolean;
   serverSidePluginKeysSet?: boolean;
-  defaultModelId?: OpenAIModelID; // or string
+
+  // If you do not need a defaultModelId at all, you can remove this line:
+  defaultModelId?: string;
+
   openaiApiKey?: string;
 }
 
@@ -33,8 +30,10 @@ export const HomeProvider = ({
   children,
   serverSideApiKeyIsSet = false,
   serverSidePluginKeysSet = false,
-  // Using the enum key:
-  defaultModelId = OpenAIModelID.GPT_3_5_TURBO,
+
+  // No longer referencing GPT_3_5_TURBO or 'gpt-3.5-turbo':
+  defaultModelId = '',
+
   openaiApiKey = '',
 }: HomeProviderProps) => {
   const { t } = useTranslation('chat');
@@ -45,21 +44,24 @@ export const HomeProvider = ({
     dispatch,
   } = contextValue;
 
+  // Handler: Create a new conversation
   const handleNewConversation = () => {
     const lastConversation = conversations[conversations.length - 1];
+
+    // If you do want to reference a fallback model, you can do so here:
+    const fallbackModel = {
+      id: 'my-fallback-model',
+      name: 'My Fallback Model',
+      maxLength: 4096,
+      tokenLimit: 4096,
+    };
+
     const newConversation: Conversation = {
       id: uuidv4(),
       name: t('New Conversation'),
       messages: [],
-      model:
-        lastConversation?.model ??
-        // e.g. if OpenAIModels is keyed by the enum values:
-        {
-          id:    OpenAIModels[defaultModelId].id,
-          name:  OpenAIModels[defaultModelId].name,
-          maxLength:   OpenAIModels[defaultModelId].maxLength,
-          tokenLimit:  OpenAIModels[defaultModelId].tokenLimit,
-        },
+      // Use last conversation’s model if it exists, otherwise use the fallback:
+      model: lastConversation?.model || fallbackModel,
       prompt: DEFAULT_SYSTEM_PROMPT,
       temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
       folderId: null,
@@ -73,6 +75,7 @@ export const HomeProvider = ({
     dispatch({ field: 'loading', value: false });
   };
 
+  // Load settings from localStorage or server-side
   useEffect(() => {
     const settings = getSettings();
     if (settings.theme) {
@@ -99,7 +102,7 @@ export const HomeProvider = ({
       value={{
         ...contextValue,
         handleNewConversation,
-        // any other handlers ...
+        // other handlers if needed
       }}
     >
       {children}
