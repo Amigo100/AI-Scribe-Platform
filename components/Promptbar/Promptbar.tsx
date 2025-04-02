@@ -20,9 +20,9 @@ const Promptbar = () => {
     localStorage.setItem('showSidePromptbar', JSON.stringify(!showSidePromptbar));
   };
 
-  // Render content for the right sidebar
+  // Render content for the right sidebar, wrapped in a div with a width class
   const renderContent = () => (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full w-64">
       {hasChatOutput ? (
         <div className="p-3">
           <PredictiveAnalyticsPanel />
@@ -46,7 +46,6 @@ const Promptbar = () => {
       side="right"
       isOpen={showSidePromptbar}
       toggleOpen={handleTogglePromptbar}
-      className="w-64"
     >
       {renderContent()}
     </Sidebar>
