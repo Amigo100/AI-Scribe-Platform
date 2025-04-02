@@ -247,7 +247,7 @@ const Home = ({
 
     if (window.innerWidth < 640) {
       dispatch({ field: 'showChatbar', value: false });
-      dispatch({ field: 'showPromptbar', value: false });
+      dispatch({ field: 'showSidePromptbar', value: false });
     }
 
     const showChatbar = localStorage.getItem('showChatbar');
@@ -255,9 +255,9 @@ const Home = ({
       dispatch({ field: 'showChatbar', value: showChatbar === 'true' });
     }
 
-    const showPromptbar = localStorage.getItem('showPromptbar');
-    if (showPromptbar) {
-      dispatch({ field: 'showPromptbar', value: showPromptbar === 'false' });
+    const showSidePromptbar = localStorage.getItem('showSidePromptbar');
+    if (showSidePromptbar) {
+      dispatch({ field: 'showSidePromptbar', value: showSidePromptbar === 'false' });
     }
 
     const folders = localStorage.getItem('folders');
