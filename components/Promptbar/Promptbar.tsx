@@ -10,20 +10,19 @@ import PredictiveAnalyticsPanel from './PredictiveAnalyticsPanel';
 const Promptbar = () => {
   const { t } = useTranslation('promptbar');
   const {
-    state: { showPromptbar, hasChatOutput },
+    state: { showSidePromptbar, hasChatOutput },
     dispatch: homeDispatch,
   } = useContext(HomeContext);
 
-  // Toggle the promptbar open/closed
+  // Toggle the promptbar (right-hand sidebar) open/closed
   const handleTogglePromptbar = () => {
-    homeDispatch({ field: 'showPromptbar', value: !showPromptbar });
-    localStorage.setItem('showPromptbar', JSON.stringify(!showPromptbar));
+    homeDispatch({ field: 'showSidePromptbar', value: !showSidePromptbar });
+    localStorage.setItem('showSidePromptbar', JSON.stringify(!showSidePromptbar));
   };
 
   // Render content for the right sidebar
   const renderContent = () => (
     <div className="flex flex-col h-full">
-      {/* Conditionally show the Predictive Analytics panel only if we have chat output */}
       {hasChatOutput ? (
         <div className="p-3">
           <PredictiveAnalyticsPanel />
@@ -33,10 +32,8 @@ const Promptbar = () => {
           {t('No chat output yet. The analytics will appear here after the assistant responds.')}
         </div>
       )}
-
       {/* Divider */}
       <div className="flex-1 border-t border-gray-600 my-2" />
-
       {/* Bottom area: Language Switcher */}
       <div className="p-3">
         <LanguageSwitcher />
@@ -47,7 +44,7 @@ const Promptbar = () => {
   return (
     <Sidebar
       side="right"
-      isOpen={showPromptbar}
+      isOpen={showSidePromptbar}
       toggleOpen={handleTogglePromptbar}
       className="w-64"
     >
