@@ -10,9 +10,17 @@ import { FolderType } from '@/types/folder';
 
 import { HomeInitialState } from './home.state';
 
+/**
+ * The interface describing what the context provides:
+ * - state: the entire HomeInitialState
+ * - dispatch: the reducer's dispatch
+ * - plus all the handler functions you plan to implement in home.provider.tsx
+ */
 export interface HomeContextProps {
   state: HomeInitialState;
   dispatch: Dispatch<ActionType<HomeInitialState>>;
+
+  // Handlers (remove any that you do not need)
   handleNewConversation: () => void;
   handleCreateFolder: (name: string, type: FolderType) => void;
   handleDeleteFolder: (folderId: string) => void;
@@ -24,6 +32,11 @@ export interface HomeContextProps {
   ) => void;
 }
 
+/**
+ * Create the HomeContext with a default value.
+ * Using `undefined!` (or a cast) is a common pattern to satisfy TypeScript
+ * when you know you'll provide a real value in the Provider.
+ */
 const HomeContext = createContext<HomeContextProps>(undefined!);
 
 export default HomeContext;
